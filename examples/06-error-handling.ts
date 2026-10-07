@@ -22,8 +22,9 @@ async function fetchHtml(url: string): Promise<string | null> {
         // details.target points at the offending field.
         console.error(`Invalid ${error.details.target}: ${error.message}`);
         return null;
-      case 'upstream_error':
-        console.error(`Upstream HTTP ${error.details.upstreamStatus}, request ${error.details.requestId}`);
+      case 'service_error':
+        // A service behind the API failed; safe to retry.
+        console.error(`Service HTTP ${error.details.serviceStatus}, request ${error.details.requestId}`);
         return null;
       default:
         throw error;

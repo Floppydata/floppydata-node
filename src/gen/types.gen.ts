@@ -4,7 +4,7 @@ export type ClientOptions = {
     baseUrl: 'https://api.floppydata.net' | (string & {});
 };
 
-export type ApiErrorCode = 'unauthorized' | 'forbidden' | 'invalid_request' | 'insufficient_balance' | 'account_not_configured' | 'not_found' | 'settings_in_use' | 'settings_limit_reached' | 'session_limit_reached' | 'session_not_active' | 'session_active' | 'connection_in_use' | 'upstream_error' | 'internal_error';
+export type ApiErrorCode = 'unauthorized' | 'forbidden' | 'invalid_request' | 'insufficient_balance' | 'account_not_configured' | 'not_found' | 'settings_in_use' | 'settings_limit_reached' | 'session_limit_reached' | 'session_not_active' | 'session_active' | 'connection_in_use' | 'service_error' | 'internal_error';
 
 export type ApiError = {
     error: {
@@ -16,7 +16,7 @@ export type ApiError = {
             activeSessionId?: string;
             nextOperationId?: string;
             requestId?: string;
-            upstreamStatus?: number;
+            serviceStatus?: number;
             failureStage?: string;
             diagnosticCode?: string;
             [key: string]: unknown;
@@ -137,14 +137,38 @@ export type RotatingProxyTrafficUsage = {
     yesterday: {
         totalBytes: number;
         totalGb: number;
+        /**
+         * Upload bytes. Always null: usage is reported as total traffic only.
+         */
+        txBytes: number | null;
+        /**
+         * Download bytes. Always null: usage is reported as total traffic only.
+         */
+        rxBytes: number | null;
     };
     last7Days: {
         totalBytes: number;
         totalGb: number;
+        /**
+         * Upload bytes. Always null: usage is reported as total traffic only.
+         */
+        txBytes: number | null;
+        /**
+         * Download bytes. Always null: usage is reported as total traffic only.
+         */
+        rxBytes: number | null;
     };
     last30Days: {
         totalBytes: number;
         totalGb: number;
+        /**
+         * Upload bytes. Always null: usage is reported as total traffic only.
+         */
+        txBytes: number | null;
+        /**
+         * Download bytes. Always null: usage is reported as total traffic only.
+         */
+        rxBytes: number | null;
     };
     /**
      * Usage for the requested from/to range. Present only when from or to is supplied.
@@ -152,6 +176,14 @@ export type RotatingProxyTrafficUsage = {
     requestedRange?: {
         totalBytes: number;
         totalGb: number;
+        /**
+         * Upload bytes. Always null: usage is reported as total traffic only.
+         */
+        txBytes: number | null;
+        /**
+         * Download bytes. Always null: usage is reported as total traffic only.
+         */
+        rxBytes: number | null;
     };
 };
 
@@ -173,7 +205,7 @@ export type RotatingProxyRequestEvent = {
      */
     trafficOut: number;
     /**
-     * Time to establish the upstream connection, milliseconds.
+     * Time to connect to the target host, milliseconds.
      */
     connectDurationMs: number;
     /**
@@ -273,7 +305,7 @@ export type FetchWebDataData = {
          */
         city?: string;
         /**
-         * Access difficulty pool. low, medium, and high make one request. auto retries low, then medium, then high after non-2xx responses. Omit this field to use the upstream default for one request.
+         * Access difficulty pool. low, medium, and high make one attempt. auto retries low, then medium, then high after a failed attempt. Omit this field to make one attempt at the default difficulty.
          */
         difficulty?: 'low' | 'medium' | 'high' | 'auto';
         /**
@@ -320,7 +352,7 @@ export type FetchWebDataErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -395,7 +427,7 @@ export type SearchWebDataErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -416,7 +448,7 @@ export type SearchWebDataResponses = {
          */
         query: string;
         /**
-         * Organic results in provider ranking order.
+         * Organic results in search ranking order.
          */
         results: Array<WebDataSearchResult>;
     };
@@ -461,7 +493,7 @@ export type GetWebDataBalanceErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -523,7 +555,7 @@ export type GetWebDataUsageErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -621,7 +653,7 @@ export type BuildRotatingProxyConnectionErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -712,7 +744,7 @@ export type ListRotatingProxySubusersErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -772,7 +804,7 @@ export type CreateRotatingProxySubuserErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -829,7 +861,7 @@ export type DeleteRotatingProxySubuserErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -887,7 +919,7 @@ export type ListRotatingProxyLocationsErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -957,7 +989,7 @@ export type GetRotatingProxyBalanceErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1027,7 +1059,7 @@ export type GetRotatingProxyUsageErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1116,7 +1148,7 @@ export type ListRotatingProxyRequestsErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1174,7 +1206,7 @@ export type ListStaticProxiesErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1247,7 +1279,7 @@ export type CheckProxyErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1310,7 +1342,7 @@ export type GetAccountBalancesErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1390,7 +1422,7 @@ export type GetAccountUsageErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1471,7 +1503,7 @@ export type ListBrowserSessionsErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1629,7 +1661,7 @@ export type CreateBrowserSessionErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1684,7 +1716,7 @@ export type DeleteBrowserSessionErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1739,7 +1771,7 @@ export type GetBrowserSessionErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1794,7 +1826,7 @@ export type StopBrowserSessionErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1849,7 +1881,7 @@ export type CreateBrowserSessionLiveViewErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };
@@ -1906,7 +1938,7 @@ export type DeleteBrowserSettingsErrors = {
      */
     500: ApiError;
     /**
-     * An upstream service failed while processing the request.
+     * A dependent service failed while processing the request. Retry the request.
      */
     502: ApiError;
 };

@@ -60,7 +60,7 @@ export class FloppyDataApi extends HeyApiClient {
     /**
      * Fetch a page with Web Data
      *
-     * Fetches rendered HTML through Massive Browser API. Explicit low, medium, or high difficulty makes one request; auto retries low, then medium, then high only after non-2xx responses. The first 2xx response is accepted as successful and consumes one Web Data request. Upstream scrape failures return structured v2 JSON errors with message "Failed to scrape the URL" and safe metadata only. Use this for page retrieval. Do not use it for usage reporting; use getWebDataUsage or getAccountUsage instead.
+     * Fetches a page and returns its rendered HTML. Explicit low, medium, or high difficulty makes one attempt; auto retries low, then medium, then high only after a failed attempt. The first successful attempt consumes one Web Data request. Failed fetches return structured v2 JSON errors with message "Failed to scrape the URL" and safe metadata only. Use this for page retrieval. Do not use it for usage reporting; use getWebDataUsage or getAccountUsage instead.
      */
     public fetchWebData<ThrowOnError extends boolean = true>(parameters: {
         url: string;
@@ -272,7 +272,7 @@ export class FloppyDataApi extends HeyApiClient {
     /**
      * Get rotating proxy usage
      *
-     * Returns rotating proxy traffic usage as UTC period rollups: yesterday, last7Days, and last30Days. If from or to is supplied, the response also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to report one subuser, or omit it to include all account subusers. proxyType can be combined with subuserId.
+     * Returns rotating proxy traffic usage as UTC period rollups: yesterday, last7Days, and last30Days. If from or to is supplied, the response also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to report one subuser, or omit it to include all account subusers. proxyType can be combined with subuserId. Rollups report total traffic with txBytes and rxBytes set to null.
      */
     public getRotatingProxyUsage<ThrowOnError extends boolean = true>(parameters?: {
         from?: string | string;
@@ -393,7 +393,7 @@ export class FloppyDataApi extends HeyApiClient {
     /**
      * Get account usage
      *
-     * Returns account-level usage across products with usage reporting as UTC period rollups. If from or to is supplied, product usage also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to narrow rotating proxy usage; it does not apply to Web Data. Static proxies are inventory-only and are not included in usage responses.
+     * Returns account-level usage across products with usage reporting as UTC period rollups. If from or to is supplied, product usage also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to narrow rotating proxy usage; it does not apply to Web Data. Rotating proxy rollups report total traffic with txBytes and rxBytes set to null. Static proxies are inventory-only and are not included in usage responses.
      */
     public getAccountUsage<ThrowOnError extends boolean = true>(parameters?: {
         product?: 'web-data' | 'proxy-rotating';

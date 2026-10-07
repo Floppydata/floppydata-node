@@ -36,7 +36,7 @@
           "session_not_active",
           "session_active",
           "connection_in_use",
-          "upstream_error",
+          "service_error",
           "internal_error"
         ]
       },
@@ -78,14 +78,14 @@
                     "example": "a1901a29e82a999f-CDG",
                     "type": "string"
                   },
-                  "upstreamStatus": {
+                  "serviceStatus": {
                     "example": 503,
                     "type": "integer",
                     "minimum": 100,
                     "maximum": 599
                   },
                   "failureStage": {
-                    "example": "provider_browser_start",
+                    "example": "browser_start",
                     "type": "string"
                   },
                   "diagnosticCode": {
@@ -491,11 +491,41 @@
                 "type": "number",
                 "minimum": 0,
                 "example": 10
+              },
+              "txBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Upload bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
+              },
+              "rxBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Download bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
               }
             },
             "required": [
               "totalBytes",
-              "totalGb"
+              "totalGb",
+              "txBytes",
+              "rxBytes"
             ]
           },
           "last7Days": {
@@ -511,11 +541,41 @@
                 "type": "number",
                 "minimum": 0,
                 "example": 10
+              },
+              "txBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Upload bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
+              },
+              "rxBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Download bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
               }
             },
             "required": [
               "totalBytes",
-              "totalGb"
+              "totalGb",
+              "txBytes",
+              "rxBytes"
             ]
           },
           "last30Days": {
@@ -531,11 +591,41 @@
                 "type": "number",
                 "minimum": 0,
                 "example": 10
+              },
+              "txBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Upload bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
+              },
+              "rxBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Download bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
               }
             },
             "required": [
               "totalBytes",
-              "totalGb"
+              "totalGb",
+              "txBytes",
+              "rxBytes"
             ]
           },
           "requestedRange": {
@@ -552,11 +642,41 @@
                 "type": "number",
                 "minimum": 0,
                 "example": 10
+              },
+              "txBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Upload bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
+              },
+              "rxBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Download bytes. Always null: usage is reported as total traffic only.",
+                "example": 5368709120
               }
             },
             "required": [
               "totalBytes",
-              "totalGb"
+              "totalGb",
+              "txBytes",
+              "rxBytes"
             ]
           }
         },
@@ -598,7 +718,7 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991,
-            "description": "Time to establish the upstream connection, milliseconds.",
+            "description": "Time to connect to the target host, milliseconds.",
             "example": 187
           },
           "fullDurationMs": {
@@ -977,7 +1097,7 @@
       "post": {
         "operationId": "fetchWebData",
         "summary": "Fetch a page with Web Data",
-        "description": "Fetches rendered HTML through Massive Browser API. Explicit low, medium, or high difficulty makes one request; auto retries low, then medium, then high only after non-2xx responses. The first 2xx response is accepted as successful and consumes one Web Data request. Upstream scrape failures return structured v2 JSON errors with message \"Failed to scrape the URL\" and safe metadata only. Use this for page retrieval. Do not use it for usage reporting; use getWebDataUsage or getAccountUsage instead.",
+        "description": "Fetches a page and returns its rendered HTML. Explicit low, medium, or high difficulty makes one attempt; auto retries low, then medium, then high only after a failed attempt. The first successful attempt consumes one Web Data request. Failed fetches return structured v2 JSON errors with message \"Failed to scrape the URL\" and safe metadata only. Use this for page retrieval. Do not use it for usage reporting; use getWebDataUsage or getAccountUsage instead.",
         "tags": [
           "Web Data"
         ],
@@ -1146,7 +1266,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1154,10 +1274,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -1190,7 +1310,7 @@
                     "minLength": 1
                   },
                   "difficulty": {
-                    "description": "Access difficulty pool. low, medium, and high make one request. auto retries low, then medium, then high after non-2xx responses. Omit this field to use the upstream default for one request.",
+                    "description": "Access difficulty pool. low, medium, and high make one attempt. auto retries low, then medium, then high after a failed attempt. Omit this field to make one attempt at the default difficulty.",
                     "example": "auto",
                     "type": "string",
                     "enum": [
@@ -1258,7 +1378,7 @@
                       "items": {
                         "$ref": "#/components/schemas/WebDataSearchResult"
                       },
-                      "description": "Organic results in provider ranking order."
+                      "description": "Organic results in search ranking order."
                     }
                   },
                   "required": [
@@ -1411,7 +1531,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1419,10 +1539,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -1617,7 +1737,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1625,10 +1745,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -1849,7 +1969,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1857,10 +1977,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -2197,7 +2317,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2205,10 +2325,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -2501,7 +2621,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2509,10 +2629,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -2683,7 +2803,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2691,10 +2811,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -2867,7 +2987,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2875,10 +2995,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -3126,7 +3246,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3134,10 +3254,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -3332,7 +3452,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3340,10 +3460,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -3357,7 +3477,7 @@
       "get": {
         "operationId": "getRotatingProxyUsage",
         "summary": "Get rotating proxy usage",
-        "description": "Returns rotating proxy traffic usage as UTC period rollups: yesterday, last7Days, and last30Days. If from or to is supplied, the response also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to report one subuser, or omit it to include all account subusers. proxyType can be combined with subuserId.",
+        "description": "Returns rotating proxy traffic usage as UTC period rollups: yesterday, last7Days, and last30Days. If from or to is supplied, the response also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to report one subuser, or omit it to include all account subusers. proxyType can be combined with subuserId. Rollups report total traffic with txBytes and rxBytes set to null.",
         "tags": [
           "Rotating Proxy"
         ],
@@ -3424,19 +3544,27 @@
                   "traffic": {
                     "yesterday": {
                       "totalBytes": 1073741824,
-                      "totalGb": 1
+                      "totalGb": 1,
+                      "txBytes": null,
+                      "rxBytes": null
                     },
                     "last7Days": {
                       "totalBytes": 10737418240,
-                      "totalGb": 10
+                      "totalGb": 10,
+                      "txBytes": null,
+                      "rxBytes": null
                     },
                     "last30Days": {
                       "totalBytes": 32212254720,
-                      "totalGb": 30
+                      "totalGb": 30,
+                      "txBytes": null,
+                      "rxBytes": null
                     },
                     "requestedRange": {
                       "totalBytes": 10737418240,
-                      "totalGb": 10
+                      "totalGb": 10,
+                      "txBytes": null,
+                      "rxBytes": null
                     }
                   },
                   "lastUpdatedAt": "2026-06-10T12:00:00.000Z",
@@ -3578,7 +3706,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3586,10 +3714,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -3845,7 +3973,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3853,10 +3981,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -4130,7 +4258,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4138,10 +4266,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -4346,7 +4474,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4354,10 +4482,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -4669,7 +4797,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4677,10 +4805,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -4708,7 +4836,7 @@
       "get": {
         "operationId": "getAccountUsage",
         "summary": "Get account usage",
-        "description": "Returns account-level usage across products with usage reporting as UTC period rollups. If from or to is supplied, product usage also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to narrow rotating proxy usage; it does not apply to Web Data. Static proxies are inventory-only and are not included in usage responses.",
+        "description": "Returns account-level usage across products with usage reporting as UTC period rollups. If from or to is supplied, product usage also includes requestedRange. Use subuserId from /v2/proxy/rotating/subusers to narrow rotating proxy usage; it does not apply to Web Data. Rotating proxy rollups report total traffic with txBytes and rxBytes set to null. Static proxies are inventory-only and are not included in usage responses.",
         "tags": [
           "Account"
         ],
@@ -4854,19 +4982,27 @@
                       "traffic": {
                         "yesterday": {
                           "totalBytes": 1073741824,
-                          "totalGb": 1
+                          "totalGb": 1,
+                          "txBytes": null,
+                          "rxBytes": null
                         },
                         "last7Days": {
                           "totalBytes": 10737418240,
-                          "totalGb": 10
+                          "totalGb": 10,
+                          "txBytes": null,
+                          "rxBytes": null
                         },
                         "last30Days": {
                           "totalBytes": 32212254720,
-                          "totalGb": 30
+                          "totalGb": 30,
+                          "txBytes": null,
+                          "rxBytes": null
                         },
                         "requestedRange": {
                           "totalBytes": 10737418240,
-                          "totalGb": 10
+                          "totalGb": 10,
+                          "txBytes": null,
+                          "rxBytes": null
                         }
                       },
                       "lastUpdatedAt": "2026-06-10T11:00:00.000Z"
@@ -5011,7 +5147,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5019,10 +5155,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -5257,7 +5393,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5265,10 +5401,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -5958,7 +6094,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5966,10 +6102,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -6159,7 +6295,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6167,10 +6303,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -6330,7 +6466,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6338,10 +6474,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -6510,7 +6646,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6518,10 +6654,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -6700,7 +6836,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6708,10 +6844,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
@@ -6873,7 +7009,7 @@
             }
           },
           "502": {
-            "description": "An upstream service failed while processing the request.",
+            "description": "A dependent service failed while processing the request. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6881,10 +7017,10 @@
                 },
                 "example": {
                   "error": {
-                    "code": "upstream_error",
-                    "message": "Failed to fetch data from an upstream service.",
+                    "code": "service_error",
+                    "message": "Failed to fetch data from a dependent service.",
                     "details": {
-                      "upstreamStatus": 503
+                      "serviceStatus": 503
                     }
                   }
                 }
