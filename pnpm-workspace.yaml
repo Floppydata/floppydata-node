@@ -1,0 +1,4 @@
+# pnpm 11 fails CI installs on unreviewed build scripts. esbuild (via tsx)
+# works without its postinstall: the binary ships as a platform package.
+allowBuilds:
+  esbuild: false

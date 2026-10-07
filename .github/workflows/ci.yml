@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generated code matches the spec
+        run: |
+          pnpm generate
+          git diff --exit-code -- src/gen || {
+            echo "::error::src/gen is stale. Run 'pnpm generate' and commit the result."
+            exit 1
+          }
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  # Runs every example against a test environment. They create and delete a
+  # subuser and browser sessions and spend a few Web Data requests on the test
+  # account. Configured as repo secrets FLOPPYDATA_STAGING_API_KEY and
+  # FLOPPYDATA_STAGING_BASE_URL; the URL is a secret too so logs mask it.
+  examples:
+    if: github.event_name != 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    env:
+      FLOPPYDATA_API_KEY: ${{ secrets.FLOPPYDATA_STAGING_API_KEY }}
+      FLOPPYDATA_BASE_URL: ${{ secrets.FLOPPYDATA_STAGING_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run examples
+        run: |
+          # Without both, the examples would silently run against production.
+          if [ -z "$FLOPPYDATA_API_KEY" ] || [ -z "$FLOPPYDATA_BASE_URL" ]; then
+            echo "::warning::FLOPPYDATA_STAGING_API_KEY or FLOPPYDATA_STAGING_BASE_URL is not set; skipping examples."
+            exit 0
+          fi
+          for example in examples/*.ts; do
+            echo "::group::$example"
+            pnpm exec tsx "$example"
+            echo "::endgroup::"
+          done
