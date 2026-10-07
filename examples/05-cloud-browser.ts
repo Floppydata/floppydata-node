@@ -78,35 +78,37 @@ try {
   console.log(`Stopped; state kept until ${stopped.settings.retentionExpiresAt}`);
 }
 
-// 6. Second session reusing the saved fingerprint, proxy IP, cookies and storage.
-//    browser/proxy/persist cannot be sent together with settings.id.
-const { data: second } = await fd.createBrowserSession({
-  settings: { id: settingsId },
-  runtime: { timeoutSeconds: 600, keepAlive: false },
-  metadata: { taskId: TASK_ID },
-});
 try {
-  if (second.connectUrl) {
-    console.log(`Title with restored state: ${await visit(second.connectUrl, 'https://example.com')}`);
-  }
-} finally {
-  await fd.stopBrowserSession({ sessionId: second.id });
-}
-
-// 7. Page through stopped sessions with the opaque cursor; delete this example's history.
-let cursor: string | undefined;
-do {
-  const { data: page } = await fd.listBrowserSessions({ status: 'stopped', limit: 20, cursor });
-  for (const session of page.items) {
-    if (session.metadata?.taskId === TASK_ID) {
-      await fd.deleteBrowserSession({ sessionId: session.id });
-      console.log(`Deleted history for ${session.id}`);
+  // 6. Second session reusing the saved fingerprint, proxy IP, cookies and storage.
+  //    browser/proxy/persist cannot be sent together with settings.id.
+  const { data: second } = await fd.createBrowserSession({
+    settings: { id: settingsId },
+    runtime: { timeoutSeconds: 600, keepAlive: false },
+    metadata: { taskId: TASK_ID },
+  });
+  try {
+    if (second.connectUrl) {
+      console.log(`Title with restored state: ${await visit(second.connectUrl, 'https://example.com')}`);
     }
+  } finally {
+    await fd.stopBrowserSession({ sessionId: second.id });
   }
-  cursor = page.nextCursor ?? undefined;
-} while (cursor);
 
-// 8. Permanently delete the saved browser state (fails with settings_in_use
-//    while a session is running on it).
-await fd.deleteBrowserSettings({ settingsId });
-console.log(`Deleted settings ${settingsId}`);
+  // 7. Page through stopped sessions with the opaque cursor; delete this example's history.
+  let cursor: string | undefined;
+  do {
+    const { data: page } = await fd.listBrowserSessions({ status: 'stopped', limit: 20, cursor });
+    for (const session of page.items) {
+      if (session.metadata?.taskId === TASK_ID) {
+        await fd.deleteBrowserSession({ sessionId: session.id });
+        console.log(`Deleted history for ${session.id}`);
+      }
+    }
+    cursor = page.nextCursor ?? undefined;
+  } while (cursor);
+} finally {
+  // 8. Permanently delete the saved browser state, even if a step above failed
+  //    (fails with settings_in_use while a session is running on it).
+  await fd.deleteBrowserSettings({ settingsId });
+  console.log(`Deleted settings ${settingsId}`);
+}

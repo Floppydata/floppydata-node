@@ -58,6 +58,10 @@ jobs:
             echo "::warning::FLOPPYDATA_STAGING_API_KEY or FLOPPYDATA_STAGING_BASE_URL is not set; skipping examples."
             exit 0
           fi
+          # Secrets are masked only verbatim; the host also appears in other
+          # URLs (e.g. the wss:// browser connectUrl), so mask it on its own.
+          host="${FLOPPYDATA_BASE_URL#*://}"
+          echo "::add-mask::${host%%/*}"
           for example in examples/*.ts; do
             echo "::group::$example"
             pnpm exec tsx "$example"
