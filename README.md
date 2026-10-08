@@ -98,6 +98,9 @@ await fd.stopBrowserSession({ sessionId: session.id });
 Pass `settings: { id }` from an earlier persistent session to restore its
 fingerprint, proxy IP, cookies and storage.
 
+To browse through one of your static IPs instead of a rotating proxy, pass
+`proxy: { type: 'static', ip }` with an `ip` from `listStaticProxies()`.
+
 ## Configuration
 
 ```ts

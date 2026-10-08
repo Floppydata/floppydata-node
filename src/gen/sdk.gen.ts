@@ -517,6 +517,12 @@ export class FloppyDataApi extends HeyApiClient {
             };
         };
         proxy?: {
+            type: 'static';
+            /**
+             * A static IP owned by the account (GET /v2/proxy/static).
+             */
+            ip: string;
+        } | {
             type?: 'residential' | 'mobile' | 'datacenter';
             location?: {
                 countryCode?: string;

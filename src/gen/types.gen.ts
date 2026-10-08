@@ -1524,7 +1524,7 @@ export type ListBrowserSessionsResponse = ListBrowserSessionsResponses[keyof Lis
 
 export type CreateBrowserSessionData = {
     /**
-     * Session-first browser request. Omit persist for burner browser state, or pass persist.ttlSeconds to reuse settings.id for a bounded retention window after the session ends.
+     * Session-first browser request. Omit persist for burner browser state, or pass persist.ttlSeconds to reuse settings.id for a bounded retention window after the session ends. Set proxy.type to static with an ip from GET /v2/proxy/static to browse through one of your static IPs; reused settings check that the account still owns that IP.
      */
     body: {
         settings?: {
@@ -1598,6 +1598,12 @@ export type CreateBrowserSessionData = {
             };
         };
         proxy?: {
+            type: 'static';
+            /**
+             * A static IP owned by the account (GET /v2/proxy/static).
+             */
+            ip: string;
+        } | {
             type?: 'residential' | 'mobile' | 'datacenter';
             location?: {
                 countryCode?: string;
