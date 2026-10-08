@@ -1,6 +1,6 @@
 {
   "name": "@floppydata/sdk",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "TypeScript SDK for the Floppydata Client API v2: Web Data, rotating and static proxies, Cloud Browser.",
   "type": "module",
   "packageManager": "pnpm@11.28.5",
