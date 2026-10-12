@@ -3,6 +3,11 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish_tag:
+        description: Publish an existing release tag (e.g. v0.2.1) to npm, if its automatic publish failed
+        required: false
 
 permissions:
   contents: write
@@ -12,9 +17,11 @@ jobs:
   # Keeps a release PR open with the next version and changelog, derived from
   # Conventional Commit messages. Merging that PR tags the release.
   release-please:
+    if: ${{ !inputs.publish_tag }}
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - id: release
         uses: googleapis/release-please-action@v4
@@ -24,7 +31,8 @@ jobs:
 
   publish:
     needs: release-please
-    if: needs.release-please.outputs.release_created == 'true'
+    # !cancelled(): still run when release-please was skipped for a manual publish.
+    if: ${{ !cancelled() && (inputs.publish_tag || needs.release-please.outputs.release_created == 'true') }}
     runs-on: ubuntu-latest
     environment: npm
     permissions:
@@ -34,6 +42,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.publish_tag || needs.release-please.outputs.tag_name }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
