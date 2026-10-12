@@ -5783,90 +5783,115 @@
                     "additionalProperties": false
                   },
                   "proxy": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "default": "residential",
-                        "type": "string",
-                        "enum": [
-                          "residential",
-                          "mobile",
-                          "datacenter"
-                        ]
-                      },
-                      "location": {
+                    "anyOf": [
+                      {
                         "type": "object",
                         "properties": {
-                          "countryCode": {
+                          "type": {
                             "type": "string",
-                            "minLength": 2,
-                            "maxLength": 2,
-                            "pattern": "^[A-Za-z]{2}$"
+                            "const": "static"
                           },
-                          "state": {
+                          "ip": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 128
-                          },
-                          "city": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 128
+                            "format": "ipv4",
+                            "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$",
+                            "description": "A static IP owned by the account (GET /v2/proxy/static).",
+                            "example": "123.45.67.89"
                           }
                         },
+                        "required": [
+                          "type",
+                          "ip"
+                        ],
                         "additionalProperties": false
                       },
-                      "asn": {
-                        "type": "string",
-                        "maxLength": 32,
-                        "pattern": "^\\d+$"
-                      },
-                      "rotation": {
+                      {
                         "type": "object",
                         "properties": {
-                          "mode": {
-                            "default": "sticky",
+                          "type": {
+                            "default": "residential",
                             "type": "string",
                             "enum": [
-                              "sticky",
-                              "perRequest",
-                              "interval"
+                              "residential",
+                              "mobile",
+                              "datacenter"
                             ]
                           },
-                          "intervalMinutes": {
-                            "anyOf": [
-                              {
-                                "type": "number",
-                                "const": 5
+                          "location": {
+                            "type": "object",
+                            "properties": {
+                              "countryCode": {
+                                "type": "string",
+                                "minLength": 2,
+                                "maxLength": 2,
+                                "pattern": "^[A-Za-z]{2}$"
                               },
-                              {
-                                "type": "number",
-                                "const": 10
+                              "state": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
                               },
-                              {
-                                "type": "number",
-                                "const": 15
-                              },
-                              {
-                                "type": "number",
-                                "const": 20
-                              },
-                              {
-                                "type": "number",
-                                "const": 60
+                              "city": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
                               }
-                            ]
+                            },
+                            "additionalProperties": false
                           },
-                          "stickyKey": {
+                          "asn": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 128
+                            "maxLength": 32,
+                            "pattern": "^\\d+$"
+                          },
+                          "rotation": {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "default": "sticky",
+                                "type": "string",
+                                "enum": [
+                                  "sticky",
+                                  "perRequest",
+                                  "interval"
+                                ]
+                              },
+                              "intervalMinutes": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "const": 5
+                                  },
+                                  {
+                                    "type": "number",
+                                    "const": 10
+                                  },
+                                  {
+                                    "type": "number",
+                                    "const": 15
+                                  },
+                                  {
+                                    "type": "number",
+                                    "const": 20
+                                  },
+                                  {
+                                    "type": "number",
+                                    "const": 60
+                                  }
+                                ]
+                              },
+                              "stickyKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                              }
+                            },
+                            "additionalProperties": false
                           }
                         },
                         "additionalProperties": false
                       }
-                    },
-                    "additionalProperties": false
+                    ]
                   },
                   "persist": {
                     "type": "object",
@@ -5918,7 +5943,7 @@
                   }
                 },
                 "additionalProperties": false,
-                "description": "Session-first browser request. Omit persist for burner browser state, or pass persist.ttlSeconds to reuse settings.id for a bounded retention window after the session ends."
+                "description": "Session-first browser request. Omit persist for burner browser state, or pass persist.ttlSeconds to reuse settings.id for a bounded retention window after the session ends. Set proxy.type to static with an ip from GET /v2/proxy/static to browse through one of your static IPs; reused settings check that the account still owns that IP."
               }
             }
           },
