@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -9,6 +10,11 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-explicit-any": "error"
     }
+  },
+  {
+    // Plain Node.js scripts run by maintainers and CI.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { globals: globals.node }
   },
   {
     ignores: [
