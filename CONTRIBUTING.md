@@ -21,3 +21,13 @@ Releases use [release-please](https://github.com/googleapis/release-please): com
 with [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`,
 `feat!:`), merge the release PR it opens, and the release workflow publishes to npm
 with provenance through trusted publishing.
+
+## Keeping up with the API
+
+The `Sync API spec` workflow (`.github/workflows/sync-spec.yml`) regenerates the
+SDK from the production spec and opens a `feat:` or `feat!:` PR on branch
+`sync/api-spec` when it changed (breaking changes are detected with oasdiff). The
+client-api production deploy triggers it through `repository_dispatch`
+(`api-spec-updated`, with the deployed spec's SHA-256 so the workflow waits for
+production to serve it); it also runs daily and can be started by hand. Merge the
+PR, then merge the release PR that release-please opens.
