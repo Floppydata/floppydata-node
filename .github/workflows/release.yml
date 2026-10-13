@@ -38,7 +38,8 @@ jobs:
     permissions:
       contents: read
       # npm trusted publishing: the registry trusts this workflow via OIDC,
-      # so no npm token is stored. Also signs provenance.
+      # so no npm token is stored. Also signs provenance. The trust only
+      # allows staging: a maintainer approves each release with 2FA.
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -54,4 +55,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm build
-      - run: npm publish --provenance --access public
+      - run: npm stage publish --provenance --access public
+      - run: >-
+          echo "Staged $(jq -r '.name + "@" + .version' package.json). Approve it with 2FA:
+          npm stage list, then npm stage approve <stage-id>" >> "$GITHUB_STEP_SUMMARY"
