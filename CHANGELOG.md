@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/Floppydata/floppydata-node/compare/v0.2.0...v0.2.1) (2026-10-13)
+
+
+### Miscellaneous Chores
+
+* release 0.2.1 to publish the updated README to npm ([2b88441](https://github.com/Floppydata/floppydata-node/commit/2b88441a2aeb7f04f4a918760c3a293adc2ec5be))
+
 ## [0.2.0](https://github.com/Floppydata/floppydata-node/compare/v0.1.0...v0.2.0) (2026-10-08)
 
 
