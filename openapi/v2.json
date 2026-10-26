@@ -6708,7 +6708,7 @@
       "post": {
         "operationId": "createBrowserSessionLiveView",
         "summary": "Create a browser live view",
-        "description": "Returns a fresh live-view URL. It is rejected while a CDP relay is connected.",
+        "description": "Returns the live-view URL issued when the session started. It is rejected while a CDP relay is connected.",
         "tags": [
           "Cloud Browser"
         ],
