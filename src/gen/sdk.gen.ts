@@ -625,7 +625,7 @@ export class FloppyDataApi extends HeyApiClient {
     /**
      * Create a browser live view
      *
-     * Returns a fresh live-view URL. It is rejected while a CDP relay is connected.
+     * Returns the live-view URL issued when the session started. It is rejected while a CDP relay is connected.
      */
     public createBrowserSessionLiveView<ThrowOnError extends boolean = true>(parameters: {
         sessionId: string;
